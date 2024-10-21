@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Braccio Arm Control</title>
+    <style>
+        /* Styles unchanged */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border: 2px solid #007bff;
+            width: 400px;
+            margin-right: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #007bff;
+        }
+        .slider-container {
+            margin-bottom: 20px;
+        }
+        label {
+            font-weight: bold;
+            color: #333;
+        }
+        input[type=range] {
+            width: 100%;
+        }
+        .value {
+            font-size: 14px;
+            color: #007bff;
+            text-align: right;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .video-container {
+            width: 400px;
+            height: 300px;
+            border: 2px solid #007bff;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    </style>
+    <script>
+        // Define the min and max ranges for each servo
+        const servoRanges = [
+            { min: 0, max: 180 },  // Servo 1
+            { min: 20, max: 160 }, // Servo 2
+            { min: 0, max: 180 },  // Servo 3
+            { min: 0, max: 180 },  // Servo 4
+            { min: 0, max: 180 },  // Servo 5
+            { min: 15, max: 70 }   // Servo 6
+        ];
+
+        function updateSliderValue(sliderId, valueId) {
+            document.getElementById(valueId).innerText = document.getElementById(sliderId).value;
+        }
+
+        // Function to map slider value (0-100) to servo range
+        function mapSliderToServoRange(sliderValue, servoIndex) {
+            const range = servoRanges[servoIndex];
+            const mappedValue = Math.round(range.min + (sliderValue / 100) * (range.max - range.min));
+            return mappedValue;
+        }
+
+        // Send control values to the server
+        function sendControlValues() {
+            // Get the slider values (0-100)
+            let sliderValues = [];
+            for (let i = 0; i < 6; i++) {
+                sliderValues[i] = document.getElementById(`servo${i + 1}`).value;
+            }
+
+            // Map the slider values to servo ranges
+            let servoValues = sliderValues.map((value, index) => mapSliderToServoRange(value, index));
+
+            // Create URL with mapped servo values
+            let url = `/control?servo1=${servoValues[0]}&servo2=${servoValues[1]}&servo3=${servoValues[2]}&servo4=${servoValues[3]}&servo5=${servoValues[4]}&servo6=${servoValues[5]}`;
+
+            fetch(url).then(response => response.text()).then(data => {
+                console.log(data);
+            }).catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        // Reset function to send preset servo values
+        function resetServos() {
+            let url = `/control?servo1=90&servo2=90&servo3=90&servo4=90&servo5=90&servo6=40`;  // Example preset values
+            fetch(url).then(response => response.text()).then(data => {
+                console.log(data);
+                alert('Reset to default values');
+            }).catch(error => {
+                console.error('Error:', error);
+                alert('Error resetting values');
+            });
+        }
+
+        // No need for this function anymore as we are using the server stream
+        // async function startVideoStream() {
+        //     const video = document.getElementById('webcamFeed');
+        //     try {
+        //         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        //         video.srcObject = stream;
+        //     } catch (error) {
+        //         console.error('Error accessing webcam:', error);
+        //         alert('Could not access webcam. Please check permissions.');
+        //     }
+        // }
+
+        window.onload = function() {
+            const video = document.getElementById('webcamFeed');
+            video.src = '/video'; // Stream from the server
+            video.play();
+        };
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Control Braccio Arm</h1>
+        <div class="slider-container">
+            <label for="servo1">Servo 1 (0-100): </label>
+            <input type="range" id="servo1" min="0" max="100" value="50" oninput="updateSliderValue('servo1', 'value1'); sendControlValues();">
+            <div class="value" id="value1">50</div>
+        </div>
+        <div class="slider-container">
+            <label for="servo2">Servo 2 (0-100): </label>
+            <input type="range" id="servo2" min="0" max="100" value="50" oninput="updateSliderValue('servo2', 'value2'); sendControlValues();">
+            <div class="value" id="value2">50</div>
+        </div>
+        <div class="slider-container">
+            <label for="servo3">Servo 3 (0-100): </label>
+            <input type="range" id="servo3" min="0" max="100" value="50" oninput="updateSliderValue('servo3', 'value3'); sendControlValues();">
+            <div class="value" id="value3">50</div>
+        </div>
+        <div class="slider-container">
+            <label for="servo4">Servo 4 (0-100): </label>
+            <input type="range" id="servo4" min="0" max="100" value="50" oninput="updateSliderValue('servo4', 'value4'); sendControlValues();">
+            <div class="value" id="value4">50</div>
+        </div>
+        <div class="slider-container">
+            <label for="servo5">Servo 5 (0-100): </label>
+            <input type="range" id="servo5" min="0" max="100" value="50" oninput="updateSliderValue('servo5', 'value5'); sendControlValues();">
+            <div class="value" id="value5">50</div>
+        </div>
+        <div class="slider-container">
+            <label for="servo6">Servo 6 (0-100): </label>
+            <input type="range" id="servo6" min="0" max="100" value="50" oninput="updateSliderValue('servo6', 'value6'); sendControlValues();">
+            <div class="value" id="value6">50</div>
+        </div>
+        <button onclick="resetServos()">Reset Servos</button>
+    </div>
+    <div class="video-container">
+        <video id="webcamFeed" autoplay></video>
+    </div>
+</body>
+</html>

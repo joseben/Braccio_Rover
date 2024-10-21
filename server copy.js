@@ -1,0 +1,38 @@
+const express = require('express');
+const app = express();
+const port = 3000;
+const ip = '192.168.137.175'; // IP address of your ESP01
+
+// Serve the HTML file for the GUI
+app.use(express.static(__dirname + '/public'));
+
+// Receive control values from the GUI and send to ESP01
+app.get('/control', (req, res) => {
+    const servo1 = req.query.servo1;
+    const servo2 = req.query.servo2;
+    const servo3 = req.query.servo3;
+    const servo4 = req.query.servo4;
+    const servo5 = req.query.servo5;
+    const servo6 = req.query.servo6;
+
+    // Here you would send the values to the ESP01 via HTTP
+    // Using a request library to send data to ESP
+    const axios = require('axios');
+    const url = `http://${ip}/update?s1=${servo1}&s2=${servo2}&s3=${servo3}&s4=${servo4}&s5=${servo5}&s6=${servo6}`;
+    
+    axios.get(url)
+        .then(response => {
+            res.send("Sent values to ESP01");
+        })
+        .catch(error => {
+            console.error('Error sending data:', error);
+            res.send("Failed to send values to ESP01");
+        });
+});
+
+app.listen(port, () => {
+    console.log(`Webserver running at http://localhost:${port}`);
+});
+
+
+
