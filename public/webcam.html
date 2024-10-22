@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Braccio Arm Control</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border: 2px solid #007bff;
+            width: 400px;
+            margin-right: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #007bff;
+        }
+        .slider-container {
+            margin-bottom: 20px;
+        }
+        label {
+            font-weight: bold;
+            color: #333;
+        }
+        input[type=range] {
+            width: 100%;
+        }
+        .value {
+            font-size: 14px;
+            color: #007bff;
+            text-align: right;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .video-container {
+            width: 400px;
+            height: 300px;
+            border: 2px solid #007bff;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Control Braccio Arm</h1>
+        <!-- Servo controls unchanged -->
+
+        <div class="slider-container">
+            <label for="servo1">Servo 1 (0-100): </label>
+            <input type="range" id="servo1" min="0" max="100" value="50" oninput="updateSliderValue('servo1', 'value1'); sendControlValues();">
+            <div class="value" id="value1">50</div>
+        </div>
+
+        <!-- Add other servos here -->
+        <button onclick="resetServos()">Reset Servos</button>
+    </div>
+
+    <div class="video-container">
+        <!-- Stream video from server -->
+        <img src="/video" alt="Webcam feed">
+    </div>
+</body>
+</html>
