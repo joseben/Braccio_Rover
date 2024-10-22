@@ -56,13 +56,13 @@
             background-color: #0056b3;
         }
         .video-container {
-            width: 600px;
-            height: 400px;
+            width: 400px;
+            height: 300px;
             border: 2px solid #007bff;
             border-radius: 10px;
             overflow: hidden;
         }
-        img {
+        video {
             width: 100%;
             height: 100%;
             object-fit: cover;
@@ -76,7 +76,7 @@
             { min: 0, max: 180 },  // Servo 3
             { min: 0, max: 180 },  // Servo 4
             { min: 0, max: 180 },  // Servo 5
-            { min: 15, max: 70 }  // Servo 6
+            { min: 15, max: 70 }   // Servo 6
         ];
 
         function updateSliderValue(sliderId, valueId) {
@@ -111,18 +111,30 @@
             });
         }
 
-        // Reset function to send preset servo values
+        // Reset function to send preset servo values and reset sliders
         function resetServos() {
             let url = `/control?servo1=90&servo2=90&servo3=90&servo4=90&servo5=90&servo6=40`;  // Example preset values
             fetch(url).then(response => response.text()).then(data => {
                 console.log(data);
                 alert('Reset to default values');
+                
+                // Reset slider values to default
+                const defaultSliderValues = [50, 50, 50, 50, 50, 50]; 
+                for (let i = 0; i < 6; i++) {
+                    document.getElementById(`servo${i + 1}`).value = defaultSliderValues[i];
+                    updateSliderValue(`servo${i + 1}`, `value${i + 1}`);
+                }
             }).catch(error => {
                 console.error('Error:', error);
                 alert('Error resetting values');
             });
         }
 
+        window.onload = function() {
+            const video = document.getElementById('webcamFeed');
+            video.src = '/video'; // Stream from the server
+            video.play();
+        };
     </script>
 </head>
 <body>
@@ -161,8 +173,7 @@
         <button onclick="resetServos()">Reset Servos</button>
     </div>
     <div class="video-container">
-            <!-- Stream video from server -->
-            <img src="/video" alt="Webcam feed">
+        <video id="webcamFeed" autoplay></video>
     </div>
 </body>
 </html>
