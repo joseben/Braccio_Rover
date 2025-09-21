@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
-const port = 3000;
-const ip = '192.168.137.130'; // IP address of your ESP01
+const port = 3001;
+const ip = '192.168.137.120'; // IP address of your ESP01
 const ffmpeg = require('fluent-ffmpeg');
 
 // Serve the HTML file for the GUI
@@ -11,29 +11,52 @@ app.use(express.static(__dirname + '/public'));
 app.get('/video', (req, res) => {
     res.writeHead(200, {
         'Content-Type': 'multipart/x-mixed-replace; boundary=frame',
+        'Cache-Control': 'no-cache',
+        'Connection': 'close'
     });
 
-    const stream = ffmpeg('/dev/video0')
+    const command = ffmpeg('/dev/video0')
         .inputFormat('v4l2')
+        .videoCodec('mjpeg')
         .format('mjpeg')
-        .outputOptions('-r 25')  // Frame rate, adjust as needed
-        .on('error', (err) => {
-            console.error('Error streaming video:', err);
+        .size('640x480')
+        .fps(15)
+        .on('start', (commandLine) => {
+            console.log('Spawned Ffmpeg with command: ' + commandLine);
         })
-        .pipe();
+        .on('error', (err, stdout, stderr) => {
+            console.error('Error streaming video:', err.message);
+            console.error('ffmpeg stderr:', stderr);
+            if (!res.headersSent) {
+                res.status(500).send('Video stream error');
+            }
+        })
+        .on('end', () => {
+            console.log('Video stream ended');
+        });
 
+    // Pipe the stream to response
+    const stream = command.pipe();
+    
+    let frameCounter = 0;
     stream.on('data', (chunk) => {
-        res.write(`--frame\r\n`);
-        res.write('Content-Type: image/jpeg\r\n');
-        res.write(`Content-Length: ${chunk.length}\r\n`);
-        res.write('\r\n');
-        res.write(chunk, 'binary');
-        res.write('\r\n');
+        if (!res.destroyed) {
+            res.write('--frame\r\n');
+            res.write('Content-Type: image/jpeg\r\n');
+            res.write(`Content-Length: ${chunk.length}\r\n\r\n`);
+            res.write(chunk);
+            res.write('\r\n');
+            frameCounter++;
+        }
     });
 
-    stream.on('end', () => {
-        console.log('Stream ended');
-        res.end();
+    stream.on('error', (err) => {
+        console.error('Stream error:', err);
+    });
+
+    req.on('close', () => {
+        console.log('Client disconnected, killing ffmpeg process');
+        command.kill('SIGINT');
     });
 });
 
@@ -62,7 +85,7 @@ app.get('/control', (req, res) => {
 });
 
 app.listen(port, () => {
-    console.log(`Webserver running at http://localhost:${port}`);
+    console.log(`Webserver running at http://0.0.0.0:${port}`);
 });
 
 

@@ -61,10 +61,11 @@
             border-radius: 10px;
             overflow: hidden;
         }
-        img {
+        #webcamFeed {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            display: block;
         }
     </style>
 </head>
@@ -85,7 +86,41 @@
 
     <div class="video-container">
         <!-- Stream video from server -->
-        <img src="/video" alt="Webcam feed">
+        <img id="webcamFeed" src="/video" alt="Webcam feed">
     </div>
+
+    <script>
+        const webcamFeed = document.getElementById('webcamFeed');
+        
+        webcamFeed.onload = function() {
+            console.log('Webcam feed loaded successfully');
+        };
+        
+        webcamFeed.onerror = function() {
+            console.error('Error loading webcam feed');
+            webcamFeed.alt = 'Webcam feed unavailable';
+        };
+        
+        // Function to update slider values (if you have sliders)
+        function updateSliderValue(sliderId, valueId) {
+            const slider = document.getElementById(sliderId);
+            const valueDisplay = document.getElementById(valueId);
+            if (slider && valueDisplay) {
+                valueDisplay.textContent = slider.value;
+            }
+        }
+        
+        // Function to send control values (placeholder)
+        function sendControlValues() {
+            // Implementation for sending servo control values
+            console.log('Sending control values...');
+        }
+        
+        // Function to reset servos (placeholder)
+        function resetServos() {
+            // Implementation for resetting servos
+            console.log('Resetting servos...');
+        }
+    </script>
 </body>
 </html>
