@@ -1,13 +1,14 @@
 const express = require('express');
 const app = express();
-const port = 3001;
-const ip = '192.168.137.120'; // IP address of your ESP01
+const port = process.env.PORT || 3001;
+const ip = process.env.BOARD_IP || '192.168.137.120'; // IP address of the Arduino R4 WiFi
+const videoDevice = process.env.VIDEO_DEVICE || '/dev/video0';
 const ffmpeg = require('fluent-ffmpeg');
 
 // Serve the HTML file for the GUI
 app.use(express.static(__dirname + '/public'));
 
-// Endpoint to stream video from /dev/video0
+// Endpoint to stream video from the V4L2 device
 app.get('/video', (req, res) => {
     res.writeHead(200, {
         'Content-Type': 'multipart/x-mixed-replace; boundary=frame',
@@ -15,7 +16,7 @@ app.get('/video', (req, res) => {
         'Connection': 'close'
     });
 
-    const command = ffmpeg('/dev/video0')
+    const command = ffmpeg(videoDevice)
         .inputFormat('v4l2')
         .videoCodec('mjpeg')
         .format('mjpeg')
@@ -60,7 +61,7 @@ app.get('/video', (req, res) => {
     });
 });
 
-// Receive control values from the GUI and send to ESP01
+// Receive control values from the GUI and send to the board
 app.get('/control', (req, res) => {
     const servo1 = req.query.servo1;
     const servo2 = req.query.servo2;
@@ -69,18 +70,18 @@ app.get('/control', (req, res) => {
     const servo5 = req.query.servo5;
     const servo6 = req.query.servo6;
 
-    // Here you would send the values to the ESP01 via HTTP
-    // Using a request library to send data to ESP
+    // Forward the values to the Arduino R4 via HTTP
+    // (axios is used for the request)
     const axios = require('axios');
     const url = `http://${ip}/update?s1=${servo1}&s2=${servo2}&s3=${servo3}&s4=${servo4}&s5=${servo5}&s6=${servo6}`;
     
-    axios.get(url)
+    axios.get(url, { timeout: 3000 })
         .then(response => {
-            res.send("Sent values to ESP01");
+            res.send("Sent values to board");
         })
         .catch(error => {
             console.error('Error sending data:', error);
-            res.send("Failed to send values to ESP01");
+            res.send("Failed to send values to board");
         });
 });
 

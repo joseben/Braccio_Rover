@@ -1,0 +1,14 @@
+services:
+  braccio:
+    build: .
+    image: braccio-rover
+    network_mode: host        # lets the container reach the R4 on the LAN; UI on http://localhost:3001
+    devices:
+      - /dev/video0:/dev/video0
+    group_add:
+      - video
+    environment:
+      BOARD_IP: "10.92.122.251"   # IP printed by the R4 in the Serial Monitor
+      VIDEO_DEVICE: /dev/video0
+      PORT: "3001"
+    restart: unless-stopped
