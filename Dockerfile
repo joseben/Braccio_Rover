@@ -6,5 +6,6 @@ COPY package.json package-lock.json ./
 RUN npm install --omit=dev
 COPY server.js ./
 COPY public ./public
+COPY new-gui ./new-gui
 EXPOSE 3001
 CMD ["node", "server.js"]

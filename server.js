@@ -7,6 +7,7 @@ const ffmpeg = require('fluent-ffmpeg');
 
 // Serve the HTML file for the GUI
 app.use(express.static(__dirname + '/public'));
+app.use('/new-gui', express.static(__dirname + '/new-gui'));
 
 // Endpoint to stream video from the V4L2 device
 app.get('/video', (req, res) => {

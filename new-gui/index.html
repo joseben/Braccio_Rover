@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Braccio Rover · Mission Control</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="bg-glow"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h8"/><path d="M8 20v-5"/><path d="M8 15l5-6"/><path d="M13 9l5 2"/><circle cx="8" cy="15" r="1.5"/><circle cx="13" cy="9" r="1.5"/></svg>
+      </div>
+      <div>
+        <h1>Braccio Rover</h1>
+        <span class="sub">Mission Control</span>
+      </div>
+    </div>
+    <div class="status-row">
+      <div class="pill" id="pillVideo"><i class="dot"></i><span>Camera</span></div>
+      <div class="pill" id="pillBoard"><i class="dot"></i><span>Arm</span></div>
+      <div class="pill mono" id="pillLatency">— ms</div>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- Camera -->
+    <section class="card cam-card">
+      <div class="cam-wrap" id="camWrap">
+        <img id="feed" alt="Camera feed" draggable="false">
+        <div class="crosshair" id="crosshair"><span></span><span></span><i></i></div>
+        <div class="scan"></div>
+        <div class="hud hud-tl"><span class="badge live" id="liveBadge"><i></i>LIVE</span><span class="mono" id="clock">--:--:--</span></div>
+        <div class="hud hud-tr mono" id="hudRes">640×480 · 15 fps</div>
+        <div class="hud hud-bl mono" id="hudPose">B 090 · S 090 · E 090</div>
+        <div class="cam-offline" id="camOffline">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2l20 20"/><path d="M9.5 5H14l1.5 2H19a2 2 0 0 1 2 2v7.5"/><path d="M17 19H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h.5"/><path d="M10 10.2a3 3 0 0 0 3.8 3.8"/></svg>
+          <p>No signal</p>
+          <button class="btn ghost" id="btnRetry">Reconnect</button>
+        </div>
+        <div class="cam-tools">
+          <button class="icon-btn" id="btnCross" title="Crosshair (C)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v5M12 17v5M2 12h5M17 12h5"/></svg></button>
+          <button class="icon-btn" id="btnSnap" title="Snapshot (S)"><svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></button>
+          <button class="icon-btn" id="btnFull" title="Fullscreen (F)"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Arm visualiser -->
+    <section class="card viz-card">
+      <div class="card-head"><h2>Arm Pose</h2><span class="muted">live preview</span></div>
+      <div class="viz-grid">
+        <svg id="armSvg" viewBox="0 0 260 220" class="arm-svg">
+          <defs>
+            <linearGradient id="gLink" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="260" y2="220"><stop offset="0" stop-color="#7c8cff"/><stop offset="1" stop-color="#37e2d5"/></linearGradient>
+            <filter id="glow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          </defs>
+          <g class="grid-lines"></g>
+          <line x1="10" y1="195" x2="250" y2="195" class="ground"/>
+          <rect x="62" y="186" width="56" height="9" rx="3" class="base-plate"/>
+          <g id="armLinks" filter="url(#glow)">
+            <line id="l1" class="link" /><line id="l2" class="link" /><line id="l3" class="link thin" />
+            <line id="jawA" class="jaw" /><line id="jawB" class="jaw" />
+          </g>
+          <circle id="j0" class="joint" r="6"/><circle id="j1" class="joint" r="5"/><circle id="j2" class="joint" r="5"/><circle id="j3" class="joint tip" r="4"/>
+        </svg>
+        <div class="dials">
+          <div class="dial">
+            <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="44" class="dial-ring"/>
+              <g class="ticks" id="ticks"></g>
+              <g id="needleBase" class="needle"><line x1="50" y1="50" x2="50" y2="12"/><circle cx="50" cy="12" r="3.5"/></g>
+              <circle cx="50" cy="50" r="4" class="hub"/></svg>
+            <label>Base</label><b class="mono" id="dialBaseVal">90°</b>
+          </div>
+          <div class="dial">
+            <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="44" class="dial-ring"/>
+              <g class="ticks" id="ticks2"></g>
+              <g id="needleRot" class="needle alt"><line x1="50" y1="50" x2="50" y2="12"/><circle cx="50" cy="12" r="3.5"/></g>
+              <circle cx="50" cy="50" r="4" class="hub"/></svg>
+            <label>Wrist roll</label><b class="mono" id="dialRotVal">90°</b>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Controls -->
+    <section class="card ctrl-card">
+      <div class="card-head">
+        <h2>Joint Control</h2>
+        <label class="switch" title="Send while dragging"><input type="checkbox" id="liveDrag" checked><span></span><em>Live drag</em></label>
+      </div>
+      <div id="joints" class="joints"></div>
+
+      <div class="subhead">Gripper</div>
+      <div class="row">
+        <button class="btn" id="btnOpen">Open</button>
+        <button class="btn" id="btnClose">Close</button>
+      </div>
+
+      <div class="subhead">Presets</div>
+      <div class="presets" id="presets"></div>
+
+      <div class="foot-actions">
+        <button class="btn primary" id="btnSend" hidden>Send pose</button>
+        <button class="btn ghost" id="btnHome">⟲ Home</button>
+      </div>
+      <p class="hint"><kbd>1</kbd>–<kbd>6</kbd> select joint · <kbd>←</kbd><kbd>→</kbd> adjust (<kbd>Shift</kbd> ×10) · <kbd>H</kbd> home · <kbd>Space</kbd> gripper</p>
+    </section>
+  </main>
+
+  <div class="toast" id="toast"></div>
+  <script src="app.js"></script>
+</body>
+</html>
